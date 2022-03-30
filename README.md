@@ -2,7 +2,7 @@
 Based on recombination maps, a pedigree and a phased vcf/bcf, pyBcfBreeder simulate new genomes.
 
 ## Quickstart
-just run `python3 pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf | bgzip -c > result.vcf.gz`
+Just run `./pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf | bgzip -c > result.vcf.gz`
 If you want to use other recombination maps, replace the recombination maps from **maps** by yours.
 
 ## How does it work?
