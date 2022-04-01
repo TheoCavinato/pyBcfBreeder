@@ -11,6 +11,7 @@ The pedigree hould be in the .ped format defined by PLINK, the Variant Call Form
 
 ## Dependencies
 The following packages are needed for the algorithm to work:
+`numpy pysam`
 
 
 ## How does it work?
