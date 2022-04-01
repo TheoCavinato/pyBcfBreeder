@@ -2,8 +2,9 @@
 Based on recombination maps, a pedigree and a phased vcf/bcf, pyBcfBreeder simulate new genomes.
 
 ## Quickstart
-Just run `python3 pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf | bgzip -c > test.vcf.gz`. \
-If you want to use other recombination maps, replace the recombination maps in **maps** by yours.
+`python3 pyBcfBreeder.py --rec_maps <path_to_recombination_maps> --ped <pedigree> --vcf <vcf_with_founders_genomes> > result.vcf` \
+For instance, using the data available in this repository you can do `python3 pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf > result.vcf`. \
+If you have bcftoold installed on your machine, you can **bgzip** the output as follow: `python3 pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf | bzip-c  > result.vcf`
 
 ## How does it work?
 First, pyBcfBreeder use a poisson point process to simulate recombination sites in Morgan, and convert these sites into base pair using recombination maps.
