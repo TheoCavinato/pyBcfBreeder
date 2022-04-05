@@ -78,7 +78,7 @@ class Chr:
 #GIVE RECOMBINATION SITES TO NEW INDIVIDUALS FROM THE PEDIGREE
 def ped_to_rec(sorted_ped_path, rec_maps, show):
     sorted_ped=open(sorted_ped_path, 'r')
-    if show == "True":
+    if show:
         output_file=open(sorted_ped_path+".rec",'w')
 
     child_parents, child_rec_sites, all_childs = {}, [], []
@@ -121,13 +121,13 @@ def ped_to_rec(sorted_ped_path, rec_maps, show):
             child_parents[child_id]=(parent_1_ID, parent_2_ID)
             child_rec_sites.append((new_rec_line[6], new_rec_line[7]))
 
-            if show=="True":
+            if show:
                 new_rec_line[6] = str(new_rec_line[6])
                 new_rec_line[7] = str(new_rec_line[7])
                 output_file.write("\t".join(new_rec_line))
                 output_file.write("\n")
     sorted_ped.close()
-    if show == "True":
+    if show:
         output_file.close()
     return  child_parents, child_rec_sites, all_childs
 
@@ -148,17 +148,19 @@ def haplo_chooser(meiosis,toss_result, position):
     else:
             return 1
 
-def tossing_coins(out_path, all_childs):
-    metadata_writer=open(out_path+".meta.txt", 'w')
+def tossing_coins(out_path, all_childs, show):
+    if show:
+        metadata_writer=open(out_path+".meta.txt", 'w')
     toss_a_coin_per_chr = {}
     for chr in range(1,23):
         rand_seed = random.randrange(sys.maxsize)
         rng_chr = random.Random(rand_seed)
         toss_a_coin=[( rng_chr.randint(0,1), rng_chr.randint(0,1) ) for _ in range(len(all_childs))]
         toss_a_coin_per_chr[str(chr)]=toss_a_coin
-        metadata_writer.write(str(rand_seed))
-        metadata_writer.write("\n")
-    metadata_writer.close()
+        if show:
+            metadata_writer.write(str(rand_seed))
+            metadata_writer.write("\n")
+    if show:
+        metadata_writer.close()
     return toss_a_coin_per_chr
-
 

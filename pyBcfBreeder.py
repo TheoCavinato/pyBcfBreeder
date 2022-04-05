@@ -10,7 +10,8 @@ parser = argparse.ArgumentParser(description = 'To do')
 parser.add_argument('-R', '--rec_maps', help = 'folder containing all the recombination maps', required=True)
 parser.add_argument('-P', '--ped', help = 'ped (pedigree) to simulate', required=True)
 parser.add_argument('-V', '--vcf', help = 'vcf containing genomes of the founders of the pedigree', required=True)
-parser.add_argument('--show', help = 'Set this option to "True" if you want the algorithm to write the simulated recombination sites', required=False)
+parser.add_argument('--meta', help = 'Set this option to "True" if you want the algorithm to output the simulated \
+    recombination sites and the seeds used for haplotype choosing', action="store_true")
 args = parser.parse_args()
 
 ####################################
@@ -20,7 +21,7 @@ args = parser.parse_args()
 map_files=[args.rec_maps+file for file in os.listdir(args.rec_maps)] #list the recombination map available
 recombination_maps=read_all_read_maps(map_files) #read the recombination maps and store it in a dictionnary
 
-child_parents, child_rec_sites, all_childs = ped_to_rec(args.ped, recombination_maps, args.show)
+child_parents, child_rec_sites, all_childs = ped_to_rec(args.ped, recombination_maps, args.meta)
 
 ###############
 #  WRITE VCF  #
@@ -31,10 +32,6 @@ child_rec_sites_reversed=[[] for _ in range(len(child_rec_sites[0][0]))]
 for chr in range(len(child_rec_sites[0][0])):
 	for ind_rec_site in child_rec_sites:
 		child_rec_sites_reversed[chr].append((ind_rec_site[0][chr], ind_rec_site[1][chr]))
-
-#################################
-#	Read the variant file	#
-#################################
 
 bcfInput = VariantFile(args.vcf)
 
@@ -51,7 +48,7 @@ print(original_header)
 #Useful variables
 output_samples = list(bcfInput.header.samples) + all_childs
 original_alleles_length = len(bcfInput_parents) 
-toss_a_coin_per_chr = tossing_coins(args.ped+".rec.meta", all_childs)
+toss_a_coin_per_chr = tossing_coins(args.ped+".rec", all_childs, args.meta)
 parent_position=[(output_samples.index(child_parents[child][0]), output_samples.index(child_parents[child][1])) for child in all_childs]
 
 for record in bcfInput:
