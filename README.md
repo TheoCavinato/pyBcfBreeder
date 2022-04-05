@@ -6,7 +6,7 @@ In this example, you have a pedigree **example_ped.ped**, a VCF containing the g
 `python3 pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf > result.vcf`. \
 to obtain a new vcf **result.vcf** containing simulated genomes of the offspring of the pedigree with genomes of the founders.
 If you have bcftools installed on your machine, you can **bgzip** the output as follow: \
-`python3 pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf | bzip-c  > result.vcf.gz`
+`python3 pyBcfBreeder.py --rec_maps maps/ --ped example_pedigree.ped --vcf example_vcf.bcf | bgzip -c  > result.vcf.gz`
 
 ## Input
 The pedigree hould be in the .ped format defined by PLINK, the Variant Call Format file containg the founders genome can be a .vcf/.vcf.gz/.bcf/
