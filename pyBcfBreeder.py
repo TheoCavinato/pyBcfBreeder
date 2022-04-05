@@ -12,6 +12,10 @@ parser.add_argument('-P', '--ped', help = 'ped (pedigree) to simulate', required
 parser.add_argument('-V', '--vcf', help = 'vcf containing genomes of the founders of the pedigree', required=True)
 parser.add_argument('--meta', help = 'Set this option to "True" if you want the algorithm to output the simulated \
     recombination sites and the seeds used for haplotype choosing', action="store_true")
+parser.add_argument('--coverages', help = 'Pass a list of coverages to this argument if you want to get \
+    simulated Genotype Likelihoods for each offspring at each position', nargs='+')
+parser.add_argument('--error', help = 'error rate for the Genotype Likelihood computation', type=float, \
+    default = 0.0001)
 args = parser.parse_args()
 
 ####################################
@@ -27,7 +31,8 @@ child_parents, child_rec_sites, all_childs = ped_to_rec(args.ped, recombination_
 #  WRITE VCF  #
 ###############
 
-#je test des trucs
+
+#Changing the format of the simulated data
 child_rec_sites_reversed=[[] for _ in range(len(child_rec_sites[0][0]))]
 for chr in range(len(child_rec_sites[0][0])):
 	for ind_rec_site in child_rec_sites:
@@ -51,6 +56,15 @@ original_alleles_length = len(bcfInput_parents)
 toss_a_coin_per_chr = tossing_coins(args.ped+".rec", all_childs, args.meta)
 parent_position=[(output_samples.index(child_parents[child][0]), output_samples.index(child_parents[child][1])) for child in all_childs]
 
+#If --coverages
+if args.coverages:
+
+    coverages_output_files = []
+    for coverage in args.coverages:
+        coverages_output_files.append(open("PL_"+str(coverage)+"x.vcf", 'w'))
+
+    writing_coverages_header(coverages_output_files, bcfInput.header, all_childs)
+
 for record in bcfInput:
     if record.chrom[:3] == "chr":
         chromosome = record.chrom.split("chr")[1]
@@ -60,10 +74,17 @@ for record in bcfInput:
     position = record.pos
     alleles=[al['GT'] for al in record.samples.values()]
 
+    if args.coverages:
+        split_rec = str(record).split("\t")[:8]
+        split_rec.append("DP:PL")
+
     #-------Take the allele resulting from the meiosis for each parent-------#
     for parent_rec_sites, pos_parent, tossing in zip(child_rec_sites_reversed[chromosome_pos], parent_position, toss_a_coin_per_chr[chromosome]):
             out_haplo=tuple(str(alleles[parent][haplo_chooser(rec_sites, toss, position)]) for rec_sites, parent, toss in zip(parent_rec_sites, pos_parent, tossing))
             alleles.append(out_haplo)
+
+    if args.coverages:
+        writing_coverages(split_rec, coverages_output_files, len(all_childs))
                     
     #-------Add alleles to the record-------#
 
