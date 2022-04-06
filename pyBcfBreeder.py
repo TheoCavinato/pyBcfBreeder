@@ -13,7 +13,7 @@ parser.add_argument('-V', '--vcf', help = 'vcf containing genomes of the founder
 parser.add_argument('--meta', help = 'Set this option to "True" if you want the algorithm to output the simulated \
     recombination sites and the seeds used for haplotype choosing', action="store_true")
 parser.add_argument('--coverages', help = 'Pass a list of coverages to this argument if you want to get \
-    simulated Genotype Likelihoods for each offspring at each position', nargs='+')
+    simulated Genotype Likelihoods for each offspring at each position', nargs='+') 
 parser.add_argument('--error', help = 'error rate for the Genotype Likelihood computation', type=float, \
     default = 0.0001)
 args = parser.parse_args()
@@ -58,12 +58,8 @@ parent_position=[(output_samples.index(child_parents[child][0]), output_samples.
 
 #If --coverages
 if args.coverages:
-
-    coverages_output_files = []
-    for coverage in args.coverages:
-        coverages_output_files.append(open("PL_"+str(coverage)+"x.vcf", 'w'))
-
-    writing_coverages_header(coverages_output_files, bcfInput.header, all_childs)
+    coverage_header = str(bcfInput.header).split('\n')
+    coverage_objs = [Coverage(coverage, args.error, all_childs, coverage_header) for coverage in args.coverages]
 
 for record in bcfInput:
     if record.chrom[:3] == "chr":
@@ -84,10 +80,18 @@ for record in bcfInput:
             alleles.append(out_haplo)
 
     if args.coverages:
-        writing_coverages(split_rec, coverages_output_files, len(all_childs))
+        split_rec = str(record).split("\t")[:8]
+        split_rec.append('DP:PL')
+        for cov in coverage_objs:
+            cov.simulate_new_line(split_rec.copy())
                     
     #-------Add alleles to the record-------#
 
     output_record=str(record)[:-1]
     output_record+='\t'+'\t'.join(['|'.join(all) for all in alleles[original_alleles_length:]])
     print(output_record)
+
+#Close coverages files
+if args.coverages:
+    for cov in coverage_objs:
+        cov.close_file()
