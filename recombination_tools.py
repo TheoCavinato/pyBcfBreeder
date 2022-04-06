@@ -182,7 +182,17 @@ class Coverage:
         self.output_file.close()
     
     def write_header(self, split_header):
+        format_checker = False
         for line in split_header[:-2]:
+            if line[:8] == "##FORMAT":
+                format_checker=True
+            if line[:8] != "##FORMAT" and format_checker:
+                self.output_file.write('##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">')
+                self.output_file.write('\n')
+                self.output_file.write('##FORMAT=<ID=PL,Number=3,Type=Integer,Description="Normalized, Phred-scaled likelihoods for AA,AB,BB genotypes where A=ref and B=alt">')
+                self.output_file.write('\n')
+                format_checker=False
+
             self.output_file.write(line)
             self.output_file.write('\n')
         last_line = split_header[-2].split('\t')[:9]

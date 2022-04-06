@@ -90,6 +90,7 @@ for record in bcfInput:
     output_record=str(record)[:-1]
     output_record+='\t'+'\t'.join(['|'.join(all) for all in alleles[original_alleles_length:]])
     print(output_record)
+bcfInput.close()
 
 #Close coverages files
 if args.coverages:
