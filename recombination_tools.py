@@ -200,7 +200,7 @@ class Coverage:
             return 1/2 - self.error/3
 
     def GL_to_PL(self, GLs):
-        log_values = [-10*math.log(GL) for GL in GLs]
+        log_values = [round(-10*math.log10(GL)) for GL in GLs]
         min_value = min(log_values)
         PLs = [str(log_value - min_value) for log_value in log_values]
         return ','.join(PLs)
