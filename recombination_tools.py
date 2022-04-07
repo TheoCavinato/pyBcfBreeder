@@ -1,4 +1,3 @@
-from distutils.log import error
 import random, math, numpy, sys
 
 #########################################
@@ -189,7 +188,7 @@ class Coverage:
             if line[:8] != "##FORMAT" and format_checker:
                 self.output_file.write('##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">')
                 self.output_file.write('\n')
-                self.output_file.write('##FORMAT=<ID=PL,Number=3,Type=Integer,Description="Normalized, Phred-scaled likelihoods for AA,AB,BB genotypes where A=ref and B=alt">')
+                self.output_file.write('##FORMAT=<ID=PL,Number=G,Type=Integer,Description="Normalized, Phred-scaled likelihoods for AA,AB,BB genotypes where A=ref and B=alt">')
                 self.output_file.write('\n')
                 format_checker=False
 
@@ -203,18 +202,18 @@ class Coverage:
     
     def emission_probas(self, H1, H2, read_allele):
         if H1 == H2 == read_allele:
-            return 1 - self.error
+            return math.log10(1 - self.error)
         elif H1 != read_allele and H2 != read_allele:
-            return self.error/3
+            return math.log10(self.error/3)
         else:
-            return 1/2 - self.error/3
+            return math.log10(1/2 - self.error/3)
 
     def GL_to_PL(self, GLs):
-        log_values = [round(-10*math.log10(GL)) for GL in GLs]
+        log_values = [-10*GL for GL in GLs]
         min_value = min(log_values)
-        PLs = [str(log_value - min_value) for log_value in log_values]
+        PLs = [str(int(round(log_value - min_value))) for log_value in log_values]
         return ','.join(PLs)
-    
+
     def simulate_DP_PL(self):
         #simulate a number of reads covering the position
         DP = numpy.random.poisson(self.coverage, 1)[0]
@@ -228,19 +227,14 @@ class Coverage:
             all_1_nbr = DP - all_0_nbr
 
             #calculate the likelihoods of the genotypes 00, 01 and 11
-            p_00_D = self.emission_probas( 0, 0, 0)*all_0_nbr + self.emission_probas( 0, 0, 1)*all_1_nbr
-            p_01_D = self.emission_probas( 0, 1, 0)*all_0_nbr + self.emission_probas( 0, 1, 1)*all_1_nbr
-            p_11_D = self.emission_probas( 1, 1, 0)*all_0_nbr + self.emission_probas( 1, 1, 1)*all_1_nbr
-
-            denominator = p_00_D + p_01_D + p_11_D
-            p_D_00 = p_00_D / denominator
-            p_D_01 = p_01_D / denominator
-            p_D_11 = p_11_D / denominator
+            p_D_00 = self.emission_probas( 0, 0, 0)*all_0_nbr + self.emission_probas( 0, 0, 1)*all_1_nbr
+            p_D_01 = self.emission_probas( 0, 1, 0)*all_0_nbr + self.emission_probas( 0, 1, 1)*all_1_nbr
+            p_D_11 = self.emission_probas( 1, 1, 0)*all_0_nbr + self.emission_probas( 1, 1, 1)*all_1_nbr
 
             PL = self.GL_to_PL((p_D_00, p_D_01, p_D_11))
 
             return str(DP)+':'+PL
-    
+
     def simulate_new_line(self, line):
         for _ in range(self.samples_nbr):
             line.append(self.simulate_DP_PL())
