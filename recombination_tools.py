@@ -175,6 +175,7 @@ class Coverage:
         self.samples = p_samples
         self.samples_nbr = len(p_samples)
         self.output_file = open("PL_"+p_coverage+"x.vcf", 'w')
+        self.PL_to_GT_array = ['0/0', '0/1', '1/1']
         self.write_header(p_header)
     
     def close_file(self):
@@ -211,16 +212,18 @@ class Coverage:
     def GL_to_PL(self, GLs):
         log_values = [-10*GL for GL in GLs]
         min_value = min(log_values)
-        PLs = [str(int(round(log_value - min_value))) for log_value in log_values]
-        return ','.join(PLs)
+        PLs = [int(round(log_value - min_value)) for log_value in log_values]
+        return PLs
+
+    def PL_to_GT(self, PLs):
+        return self.PL_to_GT_array[PLs.index(0)]
 
     def simulate_DP_PL(self):
         #simulate a number of reads covering the position
         DP = numpy.random.poisson(self.coverage, 1)[0]
         if DP==0:
-            #return ".:.,.,."
-            PL = self.GL_to_PL((1/3, 1/3, 1/3))
-            return str(DP)+':'+PL
+            PL = [0, 0, 0]
+            GT = "./."
 
         else:
             all_0_nbr = numpy.random.binomial(DP, 0.5)
@@ -233,8 +236,11 @@ class Coverage:
 
             PL = self.GL_to_PL((p_D_00, p_D_01, p_D_11))
 
-            return str(DP)+':'+PL
+            GT = self.PL_to_GT(PL)
+        PL_string = [str(value) for value in PL]
 
+        return GT + ':' + str(DP)+':'+','.join(PL_string)
+    
     def simulate_new_line(self, line):
         for _ in range(self.samples_nbr):
             line.append(self.simulate_DP_PL())

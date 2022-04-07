@@ -81,7 +81,7 @@ for record in bcfInput:
 
     if args.coverages:
         split_rec = str(record).split("\t")[:8]
-        split_rec.append('DP:PL')
+        split_rec.append('GT:DP:PL')
         for cov in coverage_objs:
             cov.simulate_new_line(split_rec.copy())
                     
