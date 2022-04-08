@@ -175,7 +175,7 @@ class Coverage:
         self.samples = p_samples
         self.samples_nbr = len(p_samples)
         self.output_file = open("PL_"+p_coverage+"x.vcf", 'w')
-        self.PL_to_GT_array = ['0/0', '0/1', '1/1']
+        self.new_line = []
         self.write_header(p_header)
     
     def close_file(self):
@@ -212,37 +212,38 @@ class Coverage:
     def GL_to_PL(self, GLs):
         log_values = [-10*GL for GL in GLs]
         min_value = min(log_values)
-        PLs = [int(round(log_value - min_value)) for log_value in log_values]
-        return PLs
+        PLs = [str(int(round(log_value - min_value))) for log_value in log_values]
+        return ','.join(PLs)
 
-    def PL_to_GT(self, PLs):
-        return self.PL_to_GT_array[PLs.index(0)]
-
-    def simulate_DP_PL(self):
+    def simulate_DP_PL(self, GT):
         #simulate a number of reads covering the position
         DP = numpy.random.poisson(self.coverage, 1)[0]
         if DP==0:
-            PL = [0, 0, 0]
-            GT = "./."
+            PL = "0.0.0"
+            GT_str = "./."
 
         else:
-            all_0_nbr = numpy.random.binomial(DP, 0.5)
-            all_1_nbr = DP - all_0_nbr
+            GT_int = [int(hap) for hap in GT]
+            GT_str = '/'.join(GT)
+
+            H0_nbr = numpy.random.binomial(DP, 0.5) #X alleles for hap0
+            H1_nbr = DP - H0_nbr #DP - X alleles for hap1
 
             #calculate the likelihoods of the genotypes 00, 01 and 11
-            p_D_00 = self.emission_probas( 0, 0, 0)*all_0_nbr + self.emission_probas( 0, 0, 1)*all_1_nbr
-            p_D_01 = self.emission_probas( 0, 1, 0)*all_0_nbr + self.emission_probas( 0, 1, 1)*all_1_nbr
-            p_D_11 = self.emission_probas( 1, 1, 0)*all_0_nbr + self.emission_probas( 1, 1, 1)*all_1_nbr
+            p_D_00 = self.emission_probas( 0, 0, GT_int[0])*H0_nbr + self.emission_probas( 0, 0, GT_int[1])*H1_nbr
+            p_D_01 = self.emission_probas( 0, 1, GT_int[0])*H0_nbr + self.emission_probas( 0, 1, GT_int[1])*H1_nbr
+            p_D_11 = self.emission_probas( 1, 1, GT_int[0])*H0_nbr + self.emission_probas( 1, 1, GT_int[1])*H1_nbr
 
             PL = self.GL_to_PL((p_D_00, p_D_01, p_D_11))
 
-            GT = self.PL_to_GT(PL)
-        PL_string = [str(value) for value in PL]
-
-        return GT + ':' + str(DP)+':'+','.join(PL_string)
+        return GT_str + ':' + str(DP)+':'+PL
     
-    def simulate_new_line(self, line):
-        for _ in range(self.samples_nbr):
-            line.append(self.simulate_DP_PL())
-        self.output_file.write('\t'.join(line))
+    def start_new_line(self, line):
+        self.new_line = line
+    
+    def add_genotype(self, out_haplo):
+        self.new_line.append(self.simulate_DP_PL(out_haplo))
+    
+    def write_new_line(self):
+        self.output_file.write('\t'.join(self.new_line))
         self.output_file.write('\n')

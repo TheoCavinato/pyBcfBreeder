@@ -75,16 +75,23 @@ for record in bcfInput:
         split_rec.append("DP:PL")
 
     #-------Take the allele resulting from the meiosis for each parent-------#
-    for parent_rec_sites, pos_parent, tossing in zip(child_rec_sites_reversed[chromosome_pos], parent_position, toss_a_coin_per_chr[chromosome]):
-            out_haplo=tuple(str(alleles[parent][haplo_chooser(rec_sites, toss, position)]) for rec_sites, parent, toss in zip(parent_rec_sites, pos_parent, tossing))
-            alleles.append(out_haplo)
-
     if args.coverages:
         split_rec = str(record).split("\t")[:8]
         split_rec.append('GT:DP:PL')
         for cov in coverage_objs:
-            cov.simulate_new_line(split_rec.copy())
-                    
+            cov.start_new_line(split_rec.copy())
+
+    for parent_rec_sites, pos_parent, tossing in zip(child_rec_sites_reversed[chromosome_pos], parent_position, toss_a_coin_per_chr[chromosome]):
+            out_haplo=tuple(str(alleles[parent][haplo_chooser(rec_sites, toss, position)]) for rec_sites, parent, toss in zip(parent_rec_sites, pos_parent, tossing))
+            alleles.append(out_haplo)
+            if args.coverages:
+                for cov in coverage_objs:
+                    cov.add_genotype(out_haplo)
+    
+    if args.coverages:
+        for cov in coverage_objs:
+            cov.write_new_line()
+
     #-------Add alleles to the record-------#
 
     output_record=str(record)[:-1]
