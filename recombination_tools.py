@@ -219,7 +219,7 @@ class Coverage:
         #simulate a number of reads covering the position
         DP = numpy.random.poisson(self.coverage, 1)[0]
         if DP==0:
-            PL = "0.0.0"
+            PL = "0,0,0"
             GT_str = "./."
 
         else:
