@@ -19,3 +19,5 @@ The following packages are needed for the algorithm to work:
 ## How does it work?
 First, pyBcfBreeder use a poisson point process to simulate recombination sites in Morgan, and convert these sites into base pair using recombination maps.
 Then, for each member of the pedigree, and for each position in the bcf, alleles will be copy from parental haplotypes depending on the previously generated recombination sites.
+
+<p style="color:red"><b>Warning:</b> If the recombination map of an autosome is lacking, no recombination will occur for this chromosome </p>

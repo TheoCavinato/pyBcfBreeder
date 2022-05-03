@@ -27,7 +27,7 @@ logs_writer = open('logs.pyBcfBreeder.txt', 'w')
 logs_writer.write("----------------------------------\n")
 logs_writer.write("Simulating recombination sites...\n")
 map_files=[args.rec_maps+file for file in os.listdir(args.rec_maps)] #list the recombination map available
-recombination_maps=read_all_read_maps(map_files) #read the recombination maps and store it in a dictionnary
+recombination_maps=read_all_read_maps(map_files)
 
 child_parents, child_rec_sites, all_childs = ped_to_rec(args.ped, recombination_maps, args.meta)
 logs_writer.write("Recombination sites simulated\n")
@@ -43,9 +43,8 @@ for chr in range(len(child_rec_sites[0][0])):
 	for ind_rec_site in child_rec_sites:
 		child_rec_sites_reversed[chr].append((ind_rec_site[0][chr], ind_rec_site[1][chr]))
 
-bcfInput = VariantFile(args.vcf)
-
 #Only read information from the samples we have interest in
+bcfInput = VariantFile(args.vcf)
 rec_parents = {parents[0] for parents in child_parents.values()} | {parents[1] for parents in child_parents.values()} 
 bcfInput_parents = list(set(bcfInput.header.samples) & rec_parents)
 bcfInput.subset_samples(bcfInput_parents)
