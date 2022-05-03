@@ -18,7 +18,7 @@ parser.add_argument('--error', help = 'error rate for the Genotype Likelihood co
     default = 0.0001)
 args = parser.parse_args()
 
-logs_writer = open('logs.pyBcfBreeder.txt', 'w')
+logs_writer = open(args.ped+".logs.txt", 'w')
 
 ####################################
 #  SIMULATING RECOMBINATION SITES  #
