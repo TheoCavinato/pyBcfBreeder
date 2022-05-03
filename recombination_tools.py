@@ -5,7 +5,6 @@ import random, math, numpy, sys
 #########################################
 def read_one_rec_map(file_path, rec_maps):
     rec_map_file=open(file_path,'r')
-    print(file_path)
 
     header=rec_map_file.readline().strip().split('\t')
     col_cM=header.index("cM")
