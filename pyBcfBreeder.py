@@ -18,19 +18,24 @@ parser.add_argument('--error', help = 'error rate for the Genotype Likelihood co
     default = 0.0001)
 args = parser.parse_args()
 
+logs_writer = open('logs.pyBcfBreeder.txt', 'w')
+
 ####################################
 #  SIMULATING RECOMBINATION SITES  #
 ####################################
 
+logs_writer.write("----------------------------------\n")
+logs_writer.write("Simulating recombination sites...\n")
 map_files=[args.rec_maps+file for file in os.listdir(args.rec_maps)] #list the recombination map available
 recombination_maps=read_all_read_maps(map_files) #read the recombination maps and store it in a dictionnary
 
 child_parents, child_rec_sites, all_childs = ped_to_rec(args.ped, recombination_maps, args.meta)
+logs_writer.write("Recombination sites simulated\n")
+
 
 ###############
 #  WRITE VCF  #
 ###############
-
 
 #Changing the format of the simulated data
 child_rec_sites_reversed=[[] for _ in range(len(child_rec_sites[0][0]))]
@@ -61,6 +66,9 @@ if args.coverages:
     coverage_header = str(bcfInput.header).split('\n')
     coverage_objs = [Coverage(coverage, args.error, all_childs, coverage_header) for coverage in args.coverages]
 
+logs_writer.write("----------------------------------\n")
+logs_writer.write("Simulating recombination...\n")
+k=0
 for record in bcfInput:
     if record.chrom[:3] == "chr":
         chromosome = record.chrom.split("chr")[1]
@@ -97,9 +105,16 @@ for record in bcfInput:
     output_record=str(record)[:-1]
     output_record+='\t'+'\t'.join(['|'.join(all) for all in alleles[original_alleles_length:]])
     print(output_record)
+
+    #-------Write the number of markers simulated every 100 markers------#
+    k+=1
+    if k%100==0 and k!=0:
+        logs_writer.write(str(k)+" markers simulated\n")
 bcfInput.close()
 
 #Close coverages files
 if args.coverages:
     for cov in coverage_objs:
         cov.close_file()
+logs_writer.write("Recombination simulated\n")
+logs_writer.close()
