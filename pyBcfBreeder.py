@@ -63,7 +63,7 @@ parent_position=[(output_samples.index(child_parents[child][0]), output_samples.
 #If --coverages
 if args.coverages:
     coverage_header = str(bcfInput.header).split('\n')
-    coverage_objs = [Coverage(coverage, args.error, all_childs, coverage_header) for coverage in args.coverages]
+    coverage_objs = [Coverage(coverage, args.error, all_childs, coverage_header, args.ped) for coverage in args.coverages]
 
 logs_writer.write("----------------------------------\n")
 logs_writer.write("Simulating recombination...\n")

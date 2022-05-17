@@ -176,12 +176,12 @@ def tossing_coins(out_path, all_childs, show):
 #####################################################
 
 class Coverage:
-    def __init__(self, p_coverage, p_error, p_samples, p_header):
+    def __init__(self, p_coverage, p_error, p_samples, p_header, p_pedigree_path):
         self.coverage = float(p_coverage)
         self.error = p_error
         self.samples = p_samples
         self.samples_nbr = len(p_samples)
-        self.output_file = open("PL_"+p_coverage+"x.vcf", 'w')
+        self.output_file = open(p_pedigree_path+".PL_"+p_coverage+"x.vcf", 'w')
         self.new_line = []
         self.write_header(p_header)
     
